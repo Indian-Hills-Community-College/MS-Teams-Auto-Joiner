@@ -5,20 +5,13 @@ from webdriver_manager.chrome import ChromeDriverManager
 from time import sleep
 from datetime import datetime
 import json
-from twilio.rest import Client
-
 
 check = 2 # variable used for sending msg
 meeting_name = "meeting_name"
-try:
-    with open('config.json', 'r') as f:
-        config = json.load(f)
-except:
-    print('config file not found. Exiting')
-    sys.exit(1)
-
-client = Client(config['account_sid'], config['auth_token'])
-
+config = {
+    'headless': true,
+    'minimumParticipants': 10
+}
 
 TEAMS_URL = 'https://teams.microsoft.com/_#/calendarv2'
 
@@ -28,10 +21,9 @@ timeOutDelay = 30  # increase if you have a slow internet connection
 curParticipants = 0
 minParticipants = 10
 
-
 def get_driver_options():
     opt = Options()
-    if 'headless' in config and config['headless']:
+    if config['headless']
         opt.add_argument("--headless")
         opt.add_argument("--window-size=1920,1080")
     opt.add_argument("--disable-infobars")
@@ -94,11 +86,6 @@ def wait_and_find_elements_by_xpath(xpath, timeout=timeOutDelay):
 def login():
     browser.get(TEAMS_URL)  # open calendar tab in teams
     sleep(sleepDelay)
-    wait_and_find_ele_by_id('i0116').send_keys(config['username'])  # enter username
-    wait_and_find_ele_by_id('idSIButton9').click()  # click next
-    wait_and_find_ele_by_id('i0118').send_keys(config['password'])  # enter password
-    wait_and_find_ele_by_id('idSIButton9').click()  # click next
-    wait_and_find_ele_by_id('idSIButton9').click()  # click yes to stay signed in
     web_ele = wait_and_find_ele_by_link_text('Use the web app instead', 5)
     if web_ele is not None:
         web_ele.click()
@@ -120,19 +107,11 @@ def check_and_join_meeting():
         elem.click()
     wait_and_find_element_by_xpath('//button[.="Join now"]').click()  # join meeting
 
-    if(config['use_twilio']==True):
+    if(config['use_']==True):
         global check
         global meeting_name
         meeting_name=browser.title
         check = 0
-        try:
-            client.messages.create(
-                to=config['your_no'],
-                from_=config['twilio_no'],
-                body=f"Hi {config['nickname']}, I joined the meeting named {meeting_name} at {datetime.now()}. Hope you're doing well"
-            )
-        except:
-            print('Twilio service failed')
     
     print('Joined the meeting at {}'.format(datetime.now()))
     sleep(60 * 5)
@@ -159,17 +138,6 @@ def check_and_end_or_leave_or_join_meeting():
             else:
                 browser.execute_script("document.getElementById('roster-button').click()")
         if curParticipants <= minParticipants and curParticipants != 0:  # leaves meeting for given condition
-            if(config['use_twilio']==True):
-                #twilio message Sending
-                try:
-                    client.messages.create(
-                        to=config['your_no'],
-                        from_=config['twilio_no'],
-                        body=f"Hi {config['nickname']}, I left the meeting named {meeting_name} as attendees were less than {config['minimumParticipants']} at {datetime.now()}"
-                    )
-                except:
-                    print('Twilio service failed')
-
             browser.execute_script("document.getElementById('hangup-button').click()")
             print('Left meeting at {}'.format(datetime.now()))
             browser.get(TEAMS_URL)  # open calendar tab
@@ -179,19 +147,6 @@ def check_and_end_or_leave_or_join_meeting():
             return
     else:
         curParticipants = 0
-        #twilio message Sending
-        global check 
-        if (check==0 and config['use_twilio']==True):
-            check=1
-            try:
-                client.messages.create(
-                    to=config['your_no'],
-                    from_=config['twilio_no'],
-                    body=f"Hi {config['nickname']}, host ended the meeting named {meeting_name} at {datetime.now()}"
-                )
-            except:
-                print('Twilio service failed')
-
         browser.get(TEAMS_URL)
         browser.refresh()
         sleep(5)
@@ -200,7 +155,7 @@ def check_and_end_or_leave_or_join_meeting():
 
 def init():
     global minParticipants
-    minParticipants = config['minimumParticipants']
+    minParticipants = minimumParticipants
     browser.get(TEAMS_URL)  # open calendar tab in teams
     sleep(sleepDelay)
     while wait_and_find_element_by_xpath('//button[@title="Switch your calendar view"]') is None:
@@ -209,17 +164,6 @@ def init():
         wait_and_find_element_by_xpath('//button[@title="Switch your calendar view"]').click()
         wait_and_find_element_by_xpath('//button[@name="Day"]').click() # change calender work-week view to day view
     
-    if(config['use_twilio']==True):
-        #twilio message Sending
-        try:
-            client.messages.create(
-                to=config['your_no'],
-                from_=config['twilio_no'],
-                body=f"Hi {config['nickname']}, we finished initialization at {datetime.now()}"
-            )
-        except:
-            print('Twilio service failed')
-
     print('Initialized Successfully at {}'.format(datetime.now()))
     check_and_join_meeting()
 
