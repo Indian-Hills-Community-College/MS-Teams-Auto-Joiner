@@ -9,7 +9,7 @@ import json
 check = 2 # variable used for sending msg
 meeting_name = "meeting_name"
 config = {
-    'headless': true,
+    'headless': True,
     'minimumParticipants': 10
 }
 
@@ -23,7 +23,7 @@ minParticipants = 10
 
 def get_driver_options():
     opt = Options()
-    if config['headless']
+    if False:
         opt.add_argument("--headless")
         opt.add_argument("--window-size=1920,1080")
     opt.add_argument("--disable-infobars")
@@ -155,7 +155,7 @@ def check_and_end_or_leave_or_join_meeting():
 
 def init():
     global minParticipants
-    minParticipants = minimumParticipants
+    minParticipants = config['minimumParticipants']
     browser.get(TEAMS_URL)  # open calendar tab in teams
     sleep(sleepDelay)
     while wait_and_find_element_by_xpath('//button[@title="Switch your calendar view"]') is None:
